@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>زمستان الماسین ۱۴۰۵</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@200;300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#0a1730; --bg2:#12294f;
+  --panel:rgba(255,255,255,.055); --line:rgba(200,225,255,.10);
+  --text:#eaf3ff; --muted:#8fa8c6; --accent:#9bd6ff;
+  --ok:#6fe3bd; --no:#ff9aab; --exc:#ffd584;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root{color-scheme:dark}
+:root[data-theme="light"]{
+  --bg1:#eef5ff; --bg2:#dceaff;
+  --panel:rgba(10,23,48,.055); --line:rgba(10,23,48,.14);
+  --text:#14243d; --muted:#5d718b; --accent:#2479b5;
+  color-scheme:light;
+}
+html{height:100%}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;color:var(--text);font-family:"Vazirmatn","Tahoma",sans-serif;font-weight:300;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg1);z-index:10}
+#snow{position:fixed;inset:0;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:56px 18px 80px}
+header{text-align:center;margin-bottom:40px}
+h1{margin:0;font-weight:200;font-size:clamp(34px,7vw,60px);letter-spacing:1px}
+.sub{color:var(--muted);margin-top:4px;font-size:15px}
+.theme-toggle{
+  position:absolute;top:18px;left:18px;width:42px;height:42px;border-radius:50%;
+  border:1px solid var(--line);background:var(--panel);color:var(--text);
+  font:inherit;font-size:18px;cursor:pointer
+}
+.tabs{display:flex;justify-content:center;gap:34px;margin:34px 0 0}
+.tab{background:none;border:0;color:var(--muted);font:inherit;font-size:16px;padding:6px 2px;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-color:var(--accent)}
+.hidden{display:none!important}
+.months{display:flex;justify-content:center;gap:10px;margin:0 0 34px}
+.m{background:var(--panel);border:1px solid var(--line);color:var(--muted);font:inherit;padding:8px 26px;border-radius:999px;cursor:pointer;transition:.2s}
+.m.on{background:var(--accent);color:#0a1730;border-color:transparent;font-weight:600}
+.sheet{overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+.grid{min-width:max-content}
+.row{display:flex;align-items:center;border-radius:16px;padding:2px 0}
+.row:nth-child(even){background:var(--panel)}
+.lab{position:sticky;right:0;z-index:2;width:250px;flex:none;padding:10px 16px;font-size:14px;line-height:1.6;
+  background:linear-gradient(270deg,var(--bg1) 70%,transparent);border-radius:0 16px 16px 0}
+.row:nth-child(even) .lab{background:linear-gradient(270deg,#13284b 70%,transparent)}
+.head{position:sticky;top:0}
+.head .lab{background:none!important;color:var(--muted);font-size:13px}
+.d{width:38px;flex:none;text-align:center;font-size:12px;color:var(--muted)}
+.d.today{color:var(--accent);font-weight:600}
+.cell{width:38px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;border:0;background:none;padding:0;cursor:pointer;font:inherit}
+.cell i{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;transition:.15s}
+.cell:hover i{border-color:var(--accent)}
+.cell[data-s="1"] i{background:var(--ok);border-color:var(--ok);color:#06231a}
+.cell[data-s="1"] i::after{content:"✓";font-weight:600}
+.cell[data-s="2"] i{border-color:var(--no);color:var(--no)}
+.cell[data-s="2"] i::after{content:"✕"}
+.cell[data-s="3"] i{width:34px;border-radius:999px;background:var(--exc);border-color:var(--exc);color:#2a1d00;font-size:9.5px;font-weight:600}
+.cell[data-s="3"] i::after{content:"معذور"}
+.hint{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+.reset{display:block;margin:14px auto 0;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:4px;opacity:.7}
+/* series */
+.stitle{text-align:center;margin-bottom:30px}
+.stitle h2{margin:0;font-weight:300;font-size:28px}
+.stitle p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.eps{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
+.ep{width:150px;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px 16px 14px;position:relative;transition:.2s}
+.ep:hover{transform:translateY(-2px);border-color:rgba(155,214,255,.35)}
+.ep .n{font-size:34px;font-weight:200;line-height:1.1;margin-bottom:10px}
+.ep .l{display:flex;gap:14px;font-size:13px}
+.ep a{color:var(--accent);text-decoration:none}
+.ep a:hover{text-decoration:underline;text-underline-offset:4px}
+.seen{position:absolute;top:14px;left:14px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:none;cursor:pointer;color:transparent;font-size:12px;padding:0}
+.ep.done{opacity:.55}
+.ep.done .seen{background:var(--ok);border-color:var(--ok);color:#06231a}
+@media (max-width:600px){
+  .lab{width:175px;height:78px;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1.35;padding:6px 8px;text-align:center;overflow:hidden;overflow-wrap:anywhere}
+  .row{height:82px}
+  .head{height:82px}
+  .head .lab{justify-content:center}
+  .wrap{padding:36px 10px 60px}
+  .eps{gap:10px}
+  .ep{width:calc((100% - 10px)/2);height:104px;min-width:0;border-radius:14px;padding:14px 8px 10px}
+  .ep .n{height:38px;font-size:28px;line-height:38px;margin:0 0 8px;text-align:center}
+  .ep .l{height:32px;justify-content:center;align-items:center;gap:6px;font-size:12px}
+  .ep .l a{width:50%;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px}
+  .seen{top:8px;left:8px;width:18px;height:18px}
+  .tabs{gap:24px}
+  .theme-toggle{top:12px;left:12px;width:36px;height:36px}
+}
+@media (prefers-reduced-motion:reduce){#snow{display:none}}
+:root[data-theme="light"] .lab{
+  background:linear-gradient(270deg,var(--bg1) 70%,transparent)
+}
+:root[data-theme="light"] .row:nth-child(even) .lab{
+  background:linear-gradient(270deg,#dceaff 70%,transparent)
+}
+</style>
+</head>
+<body>
+<canvas id="snow"></canvas>
+<div class="wrap">
+  <header>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="تغییر به حالت روشن">☀</button>
+    <h1>زمستان الماسین</h1>
+    <div class="sub">۱۴۰۵</div>
+    <div class="tabs">
+      <button class="tab on" data-p="sheet">برگه اعمال</button>
+      <button class="tab" data-p="series">سریال</button>
+    </div>
+  </header>
+
+  <section id="sheet">
+    <div class="months" id="months"></div>
+    <div class="sheet"><div class="grid" id="grid"></div></div>
+    <button class="reset" id="reset">پاک کردن این ماه</button>
+  </section>
+
+  <section id="series" class="hidden">
+    <div class="stitle"><h2>حضرت عمر</h2><p id="prog"></p></div>
+    <div class="eps" id="eps"></div>
+  </section>
+</div>
+
+<script>
+const EPISODES = 31;
+/* لینک مستقیم هر قسمت را می‌توان اینجا گذاشت؛ در غیر این صورت جستجوی همان قسمت در یوتیوب باز می‌شود */
+const FA = [
+  "https://youtu.be/ITvTrOY4rJU?si=pLNptZbm0KYq8ISU",
+  "https://youtu.be/pZoL9Ax2gAI?si=jVTrDQESL_7P58J5",
+  "https://youtu.be/mzveOeRGWlI?si=Gciivv15IBXkIVtu",
+  "https://youtu.be/geJEFJSzKwE?si=nE_yU3fMc5zKmm0I",
+  "https://youtu.be/ZpnrogBLnT0?si=pEjTqmeD4zjIhR26",
+  "https://youtu.be/Icm0va6_sGQ?si=1QfdON9d_8uggbb9",
+  "https://youtu.be/oju7y-dRbko?si=Z8yHsox8UA-WT_MB",
+  "https://youtu.be/Gvn21dZkr4Y?si=SNg-VfsTm5nsbFwZ",
+  "https://youtu.be/V1gTYKVBf6Q?si=MYvpEUJn3uVdBcL8",
+  "https://youtu.be/V1gTYKVBf6Q?si=8XFfBuMQm79BcWii",
+  "https://youtu.be/pWV4w1b6qvY?si=1P1TR0_6Hhz3U1f7",
+  "https://youtu.be/tDRk8GLYYLU?si=ObdaIcx2n4yIJJ7q",
+  "https://youtu.be/hIbmL86dTYQ?si=YiU-elOIE5_Yu_TJ",
+  "https://youtu.be/o8hGse_xhyw?si=QpMJja7FZt9gRHON",
+  "https://youtu.be/h_RxblYhXUc?si=r5hWWsxzZruAVk5j",
+  "https://youtu.be/ke51msbxLQs?si=Rfk0a6eQ2paASNXr",
+  "https://youtu.be/vHENZfj5P6Y?si=aa_B5JkI4Je97dOx",
+  "https://youtu.be/3GLxSFU_484?si=-3nRWUyYkr_n7DMl",
+  "https://youtu.be/hOAJKHxuR54?si=yeDKwzhEgPo6QLDn",
+  "https://youtu.be/Mz8I-FGLcP0?si=GSy6A1iEQGrxMAbB",
+  "https://youtu.be/UJNj0oIRaTY?si=6H7qOGRopS3hxnOa",
+  "https://youtu.be/4S7edlj5hB0?si=1sfJ7GY_0M66PkZP",
+  "https://youtu.be/zb6VVjIvSS8?si=ocqejXgPWNq8gVSi",
+  "https://youtu.be/zb6VVjIvSS8?si=SUT-4g01IjDp95Y4",
+  "https://youtu.be/xtkRK-dYiJg?si=0UmBagwZ5ETgBTAT",
+  "https://youtu.be/SUAJdhEEVzI?si=ZvjW13YpYEs9Ce7Z",
+  "https://youtu.be/KVtmGFYQVCY?si=FrpdEIeSpBlhKedd",
+  "https://youtu.be/Q3JgubwhGsE?si=D56GbuyHcaLcyAoT",
+  "https://youtu.be/mCoWrcqmpdQ?si=zAi9WByxHtDI_nhp",
+  "https://youtu.be/LsS_8lHUgRM?si=gZvDm1s4ktkGJovt",
+  "https://youtu.be/wluW2UD1moY?si=DOjK6vjnS7RgMGVA"
+];
+const faLink = i => FA[i];
+const EN_LINKS = {
+  0:"https://youtu.be/SZ2TLf7wdAM?si=B4_4yDLATYKdu1Ty",
+  1:"https://youtu.be/5QYKo7NNUvg?si=rNsuvGXoXf6SHjVn",
+  2:"https://youtu.be/CFP-smE_JXM?si=TwnuTaRmLwveOr-R",
+  3:"https://youtu.be/RKDBKkP6LRg?si=Ey3P0lZJ7Y8EwCGo",
+  4:"https://youtu.be/m3tcz76Hznc?si=lbJfCGvWbE8zerHe",
+  5:"https://youtu.be/Zsr-I4hRZcU?si=zcKzlsjmltroHBAy",
+  6:"https://youtu.be/0wCQOMN4lVs?si=NnrmZD8NstiKn8Ll",
+  7:"https://youtu.be/RH4Id-l4MVc?si=t3Ho77PAlB9VN56l",
+  8:"https://youtu.be/GMU09Li2ML0?si=Ihu5CMQZ0-GYHZmg",
+  9:"https://youtu.be/soz4BdFqcYU?si=_HJECrAnfqnetPD_",
+  10:"https://youtu.be/4J3YNF1O7n8?si=5OOTT5b7CSsLpSrR",
+  11:"https://youtu.be/_1DdCGWL5fg?si=VvjSktXfQZf2GAJD",
+  12:"https://youtu.be/BJlKxMTEky4?si=wgJ5xPGvfQCpdZmK",
+  13:"https://youtu.be/yCI_z2oLJtQ?si=QzfptLaiGH-z4jSn",
+  14:"https://youtu.be/v6l5ywdJqFs?si=ckdvf3aFURo6KzxJ",
+  15:"https://youtu.be/OVm_Y9Uo4rA?si=AccjlW1egeFlQb5g",
+  16:"https://youtu.be/xcpmfwj7v_0?si=nc0F1XktB7nsY32w",
+  17:"https://youtu.be/sRyRlqvZrMI?si=vdljkju-gqiaRQ7K",
+  18:"https://youtu.be/7F8J5icOlPw?si=KO_qxn1OdGheQNYL",
+  19:"https://youtu.be/sqM1NTGRHTY?si=FRyVmNQWtxcRaZ3e",
+  20:"https://youtu.be/rZEGU3s8B4Q?si=cGt0okemUSm9biLM",
+  21:"https://youtu.be/Fo6nhFuYHk8?si=GxMAAytO9dNYObLu",
+  22:"https://youtu.be/tXUXUEEBYOs?si=nP5qYoYB03R8xD5z",
+  23:"https://youtu.be/qvKJWR9y6fk?si=2dltDeIF4gcvONqB",
+  24:"https://youtu.be/wiexCg5BSqQ?si=WkjWekfiRagLKNms",
+  25:"https://youtu.be/P2-ueKNsHiw?si=VwvWNzVexQlPSb0-",
+  26:"https://youtu.be/s4BPIhU8RBQ?si=ScMftq4CriQTz-jc",
+  27:"https://youtu.be/922k_HGcfFE?si=erjgPwBKz_Oc6Wn8",
+  28:"https://youtu.be/FCZeHf0PSwo?si=r6GmBwfzZ1vF2kQ1",
+  29:"https://youtu.be/bZ2sjO2sdHo?si=3_DHGZS6Gic-AYXP"
+};
+const enLink = i => EN_LINKS[i] || "#";
+
+const MONTHS = [
+  {name:"قوس", days:30, start:[2026,11,22]},
+  {name:"جدی", days:30, start:[2026,12,22]},
+  {name:"دلو", days:30, start:[2027,1,21]},
+  {name:"حوت", days:30, start:[2027,2,20]}
+];
+const ROWS = [
+ "تفکر روی یک آیه قرآن مجید ۱۵ دقیقه","اذکار صبح","اذکار شام","مطالعه کتاب یاران پیامبر (۲ صفحه در روز)",
+ "تماشای سریال حضرت عمر / اصحاب کهف / مریم مقدس","حفظ یک ذکر مسنون در هفته","سوره ملک هر شب",
+ "صد مرتبه استغفرالله در هر شبانه‌روز","تلاوت سوره کهف در روز جمعه","صلاة تسبیح هفته یکبار",
+ "نماز قضایی به اندازه توان در روز","هفته دو شب تهجد","روزه هفته یکبار","شنیدن یک پیام قطره‌ای در روز",
+ "تلاوت یک رکوع قرآن با ترجمه (گروپ جرعه‌ها)","نماز اشراق","نماز ضحی","نماز اوابین",
+ "صد مرتبه در روز (سُبْحَانَ اللهِ وَبِحَمْدِهِ، سُبْحَانَ اللهِ الْعَظِيم)","اشتراک در وبینار شب چهارشنبه (استاد رحیمی)",
+ "فعالیت در گروپ قهوه معنوی (سه بار در شبانه‌روز)"
+];
+const EXCUSE = new Set([7,9,10,11,12,15,16,17,18]);
+
+const fa = n => String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
+const store = {
+  get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let marks = store.get("za1405:marks",{});
+let seen  = store.get("za1405:seen",{}).omar || [];
+let cur = 0;
+
+const now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+function todayIdx(m){const s=MONTHS[m].start,d=Math.round((t0-new Date(s[0],s[1]-1,s[2]))/864e5);return d>=0&&d<MONTHS[m].days?d:-1}
+for(let i=0;i<4;i++) if(todayIdx(i)>=0){cur=i;break}
+
+function rowsOf(m){const k="m"+m;if(!marks[k])marks[k]=ROWS.map(()=>"0".repeat(MONTHS[m].days));return marks[k]}
+
+function renderMonths(){
+  document.getElementById("months").innerHTML=MONTHS.map((m,i)=>`<button class="m ${i===cur?"on":""}" data-m="${i}">${m.name}</button>`).join("");
+}
+function renderGrid(){
+  const m=MONTHS[cur], rows=rowsOf(cur), t=todayIdx(cur);
+  let h=`<div class="row head"><div class="lab">${m.name} ۱۴۰۵</div>`;
+  for(let d=0;d<m.days;d++) h+=`<div class="d ${d===t?"today":""}">${fa(d+1)}</div>`;
+  h+=`</div>`;
+  ROWS.forEach((lab,r)=>{
+    h+=`<div class="row"><div class="lab">${lab}</div>`;
+    for(let d=0;d<m.days;d++) h+=`<button class="cell" data-r="${r}" data-d="${d}" data-s="${rows[r][d]}" aria-label="${lab} ${d+1}"><i></i></button>`;
+    h+=`</div>`;
+  });
+  document.getElementById("grid").innerHTML=h;
+}
+document.getElementById("grid").addEventListener("click",e=>{
+  const b=e.target.closest(".cell"); if(!b) return;
+  const r=+b.dataset.r,d=+b.dataset.d,rows=rowsOf(cur),max=EXCUSE.has(r+1)?3:2;
+  const v=(+rows[r][d]+1)%(max+1);
+  rows[r]=rows[r].slice(0,d)+v+rows[r].slice(d+1);
+  b.dataset.s=v; store.set("za1405:marks",marks);
+});
+document.getElementById("months").addEventListener("click",e=>{
+  const b=e.target.closest("[data-m]"); if(!b) return; cur=+b.dataset.m; renderMonths(); renderGrid();
+});
+document.getElementById("reset").onclick=()=>{
+  if(!confirm("همهٔ نشانه‌های ماه "+MONTHS[cur].name+" پاک شود؟")) return;
+  delete marks["m"+cur]; store.set("za1405:marks",marks); renderGrid();
+};
+
+function renderEps(){
+  document.getElementById("prog").textContent=`${fa(seen.length)} از ${fa(EPISODES)} قسمت دیده شد`;
+  let h="";
+  for(let i=0;i<EPISODES;i++){
+    h+=`<div class="ep ${seen.includes(i)?"done":""}"><button class="seen" data-i="${i}" aria-label="دیده شد">✓</button>
+      <div class="n">${fa(i+1)}</div>
+      <div class="l"><a href="${faLink(i)}" target="_blank" rel="noopener">فارسی</a><a href="${enLink(i)}" ${EN_LINKS[i]?"target=\"_blank\" rel=\"noopener\"":""}>English</a></div></div>`;
+  }
+  document.getElementById("eps").innerHTML=h;
+}
+document.getElementById("eps").addEventListener("click",e=>{
+  const b=e.target.closest(".seen"); if(!b) return; const i=+b.dataset.i;
+  seen=seen.includes(i)?seen.filter(x=>x!==i):[...seen,i];
+  const all=store.get("za1405:seen",{}); all.omar=seen; store.set("za1405:seen",all); renderEps();
+});
+
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+  document.getElementById("sheet").classList.toggle("hidden",b.dataset.p!=="sheet");
+  document.getElementById("series").classList.toggle("hidden",b.dataset.p!=="series");
+});
+
+const themeToggle=document.getElementById("themeToggle");
+const savedTheme=store.get("za1405:theme","dark");
+function applyTheme(theme){
+  document.documentElement.dataset.theme=theme;
+  themeToggle.textContent=theme==="light"?"☾":"☀";
+  themeToggle.setAttribute("aria-label",theme==="light"?"تغییر به حالت تاریک":"تغییر به حالت روشن");
+  themeToggle.title=theme==="light"?"حالت تاریک":"حالت روشن";
+}
+applyTheme(savedTheme==="light"?"light":"dark");
+themeToggle.onclick=()=>{
+  const theme=document.documentElement.dataset.theme==="light"?"dark":"light";
+  applyTheme(theme); store.set("za1405:theme",theme);
+};
+
+(function(){
+  const cv=document.getElementById("snow"),cx=cv.getContext("2d");let W,H,fl=[];
+  function size(){W=cv.width=innerWidth;H=cv.height=innerHeight;
+    fl=Array.from({length:Math.min(70,Math.floor(W/16))},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.5,v:Math.random()*.5+.2,p:Math.random()*6}))}
+  size();addEventListener("resize",size);
+  (function tick(t){cx.clearRect(0,0,W,H);cx.fillStyle="#fff";
+    for(const f of fl){f.y+=f.v;f.x+=Math.sin(t/2200+f.p)*.25;if(f.y>H+4){f.y=-4;f.x=Math.random()*W}
+      cx.globalAlpha=.35+f.r/6;cx.beginPath();cx.arc(f.x,f.y,f.r,0,6.283);cx.fill()}
+    requestAnimationFrame(tick)})(0);
+})();
+
+renderMonths();renderGrid();renderEps();
+</script>
+</body>
+</html>
