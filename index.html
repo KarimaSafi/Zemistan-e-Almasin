@@ -58,7 +58,9 @@ h1{margin:0;font-weight:200;font-size:clamp(34px,7vw,60px);letter-spacing:1px}
 .d{width:38px;flex:none;text-align:center;font-size:12px;color:var(--muted)}
 .d.today{color:var(--accent);font-weight:600}
 .cell{width:38px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;border:0;background:none;padding:0;cursor:pointer;font:inherit}
-.cell i{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;transition:.15s}
+.weekly-controls{height:34px;flex:none;display:flex;align-items:center;justify-content:space-evenly;font-size:38px}
+.weekly-controls .cell{width:1em}
+.cell i{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;transition:.15s}
 .cell:hover i{border-color:var(--accent)}
 .cell[data-s="1"] i{background:var(--ok);border-color:var(--ok);color:#06231a}
 .cell[data-s="1"] i::after{content:"✓";font-weight:600}
@@ -82,11 +84,27 @@ h1{margin:0;font-weight:200;font-size:clamp(34px,7vw,60px);letter-spacing:1px}
 .seen{position:absolute;top:14px;left:14px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:none;cursor:pointer;color:transparent;font-size:12px;padding:0}
 .ep.done{opacity:.55}
 .ep.done .seen{background:var(--ok);border-color:var(--ok);color:#06231a}
+.profile-bar{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:12px;color:var(--muted);font-size:13px}
+.profile-bar button{border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;padding:5px 12px;border-radius:999px;cursor:pointer}
+#profileGate{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,12,25,.78);backdrop-filter:blur(5px)}
+#profileGate.hidden{display:none}
+.profile-card{width:min(360px,100%);padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--bg1);text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+.profile-card h2{margin:0 0 8px;font-size:21px;font-weight:400}
+.profile-card p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.profile-card input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;text-align:center}
+.profile-card button{margin-top:12px;padding:9px 22px;border:0;border-radius:10px;background:var(--accent);color:#0a1730;font:inherit;font-weight:600;cursor:pointer}
 @media (max-width:600px){
-  .lab{width:175px;height:78px;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1.35;padding:6px 8px;text-align:center;overflow:hidden;overflow-wrap:anywhere}
-  .row{height:82px}
-  .head{height:82px}
-  .head .lab{justify-content:center}
+  .lab{width:108px;height:68px;display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1.2;padding:4px;text-align:center;overflow:hidden;overflow-wrap:anywhere;background:var(--bg1)}
+  .row{height:70px}
+  .row:nth-child(even) .lab{background:var(--bg2)}
+  .head{height:70px}
+  .head .lab{justify-content:center;background:var(--bg1)!important}
+  .d,.cell{width:24px}
+  .d{font-size:10px}
+  .cell{height:28px}
+  .weekly-controls{height:28px;font-size:24px}
+  .cell i{width:18px;height:18px;font-size:10px}
+  .cell[data-s="3"] i{width:23px;font-size:7px}
   .wrap{padding:36px 10px 60px}
   .eps{gap:10px}
   .ep{width:calc((100% - 10px)/2);height:104px;min-width:0;border-radius:14px;padding:14px 8px 10px}
@@ -104,15 +122,28 @@ h1{margin:0;font-weight:200;font-size:clamp(34px,7vw,60px);letter-spacing:1px}
 :root[data-theme="light"] .row:nth-child(even) .lab{
   background:linear-gradient(270deg,#dceaff 70%,transparent)
 }
+@media (max-width:600px){
+  :root[data-theme="light"] .lab{background:var(--bg1)}
+  :root[data-theme="light"] .row:nth-child(even) .lab{background:var(--bg2)}
+}
 </style>
 </head>
 <body>
 <canvas id="snow"></canvas>
+<div id="profileGate" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <form class="profile-card" id="profileForm">
+    <h2 id="profileTitle">نام و تخلص</h2>
+    <p>اطلاعات هر نفر جداگانه روی همین دستگاه ذخیره می‌شود.</p>
+    <input id="profileName" type="text" autocomplete="name" maxlength="80" aria-label="نام و تخلص" placeholder="نام و تخلص خود را بنویسید" required>
+    <button id="profileSubmit" type="submit">شروع</button>
+  </form>
+</div>
 <div class="wrap">
   <header>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="تغییر به حالت روشن">☀</button>
     <h1>زمستان الماسین</h1>
     <div class="sub">۱۴۰۵</div>
+    <div class="profile-bar"><span id="profileLabel"></span><button id="switchProfile" type="button">تغییر شخص</button></div>
     <div class="tabs">
       <button class="tab on" data-p="sheet">برگه اعمال</button>
       <button class="tab" data-p="series">سریال</button>
@@ -217,22 +248,74 @@ const ROWS = [
  "صد مرتبه در روز (سُبْحَانَ اللهِ وَبِحَمْدِهِ، سُبْحَانَ اللهِ الْعَظِيم)","اشتراک در وبینار شب چهارشنبه (استاد رحیمی)",
  "فعالیت در گروپ قهوه معنوی (سه بار در شبانه‌روز)"
 ];
+const WEEKLY_ROWS = new Set([5,8,9,12,19]);
 const EXCUSE = new Set([7,9,10,11,12,15,16,17,18]);
 
 const fa = n => String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
 const store = {
-  get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){console.error("خواندن اطلاعات ذخیره‌شده ناموفق بود.",e);return def}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.error("ذخیرهٔ خودکار ناموفق بود.",e)}}
 };
-let marks = store.get("za1405:marks",{});
-let seen  = store.get("za1405:seen",{}).omar || [];
+const PROFILES_KEY="za1405:profiles";
+let profiles=store.get(PROFILES_KEY,{})||{};
+let profileKey="";
+let profileName="";
+let marks={};
+let seen=[];
 let cur = 0;
+
+function saveProfile(){
+  if(!profileKey) return;
+  profiles[profileKey]={name:profileName,marks,seen};
+  store.set(PROFILES_KEY,profiles);
+}
+function activateProfile(name){
+  profileName=name.trim().replace(/\s+/g," ");
+  profileKey=encodeURIComponent(profileName.toLocaleLowerCase());
+  profiles=store.get(PROFILES_KEY,{})||{};
+  let profile=profiles[profileKey];
+  if(!profile&&Object.keys(profiles).length===0){
+    const oldSeen=store.get("za1405:seen",{}).omar||[];
+    profile={name:profileName,marks:store.get("za1405:marks",{}),seen:oldSeen};
+  }
+  if(!profile) profile={name:profileName,marks:{},seen:[]};
+  profile.name=profileName;
+  marks=profile.marks||{};
+  seen=profile.seen||[];
+  document.getElementById("profileLabel").textContent=profileName;
+  store.set("za1405:activeProfile",profileKey);
+  saveProfile();
+  document.getElementById("profileGate").classList.add("hidden");
+  renderMonths();renderGrid();renderEps();
+}
+const profileGate=document.getElementById("profileGate");
+const profileForm=document.getElementById("profileForm");
+const profileNameInput=document.getElementById("profileName");
+profileForm.addEventListener("submit",e=>{
+  e.preventDefault();
+  if(!profileNameInput.value.trim()) return;
+  activateProfile(profileNameInput.value);
+});
+document.getElementById("switchProfile").addEventListener("click",()=>{
+  profileNameInput.value=profileName;
+  document.getElementById("profileSubmit").textContent="ورود";
+  profileGate.classList.remove("hidden");
+  profileNameInput.focus();
+});
 
 const now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 function todayIdx(m){const s=MONTHS[m].start,d=Math.round((t0-new Date(s[0],s[1]-1,s[2]))/864e5);return d>=0&&d<MONTHS[m].days?d:-1}
 for(let i=0;i<4;i++) if(todayIdx(i)>=0){cur=i;break}
 
 function rowsOf(m){const k="m"+m;if(!marks[k])marks[k]=ROWS.map(()=>"0".repeat(MONTHS[m].days));return marks[k]}
+function statusOfRange(row,start,span){
+  const statuses=row.slice(start,start+span);
+  return statuses.includes("1")?1:statuses.includes("2")?2:statuses.includes("3")?3:0;
+}
+function weeklyCell(lab,r,start,span,row){
+  const status=statusOfRange(row,start,span);
+  return `<button class="cell" data-r="${r}" data-d="${start}" data-span="${span}" data-s="${status}" aria-label="${lab}، بازهٔ روزهای ${fa(start+1)} تا ${fa(start+span)}"><i></i></button>`;
+}
 
 function renderMonths(){
   document.getElementById("months").innerHTML=MONTHS.map((m,i)=>`<button class="m ${i===cur?"on":""}" data-m="${i}">${m.name}</button>`).join("");
@@ -244,24 +327,33 @@ function renderGrid(){
   h+=`</div>`;
   ROWS.forEach((lab,r)=>{
     h+=`<div class="row"><div class="lab">${lab}</div>`;
-    for(let d=0;d<m.days;d++) h+=`<button class="cell" data-r="${r}" data-d="${d}" data-s="${rows[r][d]}" aria-label="${lab} ${d+1}"><i></i></button>`;
+    if(WEEKLY_ROWS.has(r)){
+      h+=`<div class="weekly-controls" style="width:${m.days}em">`;
+      for(let start=0;start<m.days;start+=7){
+        const span=Math.min(7,m.days-start);
+        h+=weeklyCell(lab,r,start,span,rows[r]);
+      }
+      h+=`</div>`;
+    }else{
+      for(let d=0;d<m.days;d++) h+=`<button class="cell" data-r="${r}" data-d="${d}" data-span="1" data-s="${rows[r][d]}" aria-label="${lab} ${fa(d+1)}"><i></i></button>`;
+    }
     h+=`</div>`;
   });
   document.getElementById("grid").innerHTML=h;
 }
 document.getElementById("grid").addEventListener("click",e=>{
   const b=e.target.closest(".cell"); if(!b) return;
-  const r=+b.dataset.r,d=+b.dataset.d,rows=rowsOf(cur),max=EXCUSE.has(r+1)?3:2;
-  const v=(+rows[r][d]+1)%(max+1);
-  rows[r]=rows[r].slice(0,d)+v+rows[r].slice(d+1);
-  b.dataset.s=v; store.set("za1405:marks",marks);
+  const r=+b.dataset.r,d=+b.dataset.d,span=+b.dataset.span||1,rows=rowsOf(cur),max=EXCUSE.has(r+1)?3:2;
+  const v=(+b.dataset.s+1)%(max+1);
+  rows[r]=rows[r].slice(0,d)+String(v).repeat(span)+rows[r].slice(d+span);
+  b.dataset.s=v; saveProfile();
 });
 document.getElementById("months").addEventListener("click",e=>{
   const b=e.target.closest("[data-m]"); if(!b) return; cur=+b.dataset.m; renderMonths(); renderGrid();
 });
 document.getElementById("reset").onclick=()=>{
   if(!confirm("همهٔ نشانه‌های ماه "+MONTHS[cur].name+" پاک شود؟")) return;
-  delete marks["m"+cur]; store.set("za1405:marks",marks); renderGrid();
+  delete marks["m"+cur]; saveProfile(); renderGrid();
 };
 
 function renderEps(){
@@ -277,7 +369,7 @@ function renderEps(){
 document.getElementById("eps").addEventListener("click",e=>{
   const b=e.target.closest(".seen"); if(!b) return; const i=+b.dataset.i;
   seen=seen.includes(i)?seen.filter(x=>x!==i):[...seen,i];
-  const all=store.get("za1405:seen",{}); all.omar=seen; store.set("za1405:seen",all); renderEps();
+  saveProfile(); renderEps();
 });
 
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
@@ -311,7 +403,13 @@ themeToggle.onclick=()=>{
     requestAnimationFrame(tick)})(0);
 })();
 
-renderMonths();renderGrid();renderEps();
+const activeProfile=store.get("za1405:activeProfile","");
+if(activeProfile&&profiles[activeProfile]){
+  profileNameInput.value=profiles[activeProfile].name;
+  document.getElementById("profileSubmit").textContent="ادامه";
+}
+profileGate.classList.remove("hidden");
+profileNameInput.focus();
 </script>
 </body>
 </html>
