@@ -298,17 +298,29 @@ function setAuthMode(mode){
   authChoices.classList.add("hidden");
   authFields.classList.remove("hidden");
   document.getElementById("profileTitle").textContent=mode==="create"?"ساخت حساب جدید":"ورود به حساب";
-  document.getElementById("profileDescription").textContent=mode==="create"?"نام، تخلص و کدی بسازید که حداقل ۴ نویسه و شامل حرف و عدد باشد.":"نام، تخلص و کدی را وارد کنید که هنگام ساخت حساب انتخاب کرده‌اید.";
+  document.getElementById("profileDescription").textContent=mode==="create"?"نام، تخلص و کدی بسازید که حداقل ۴ نویسه و شامل حرف و عدد باشد.":"فقط کد ورود حساب خود را وارد کنید.";
   document.getElementById("profileSubmit").textContent=mode==="create"?"ثبت حساب":"ورود";
   profileCodeInput.autocomplete=mode==="create"?"new-password":"current-password";
+  firstNameInput.hidden=mode==="login";
+  lastNameInput.hidden=mode==="login";
+  firstNameInput.required=mode==="create";
+  lastNameInput.required=mode==="create";
+  profileCodeInput.minLength=mode==="create"?4:1;
+  profileCodeInput.placeholder=mode==="create"?"کد ورود: حداقل ۴ نویسه، شامل حرف و عدد":"کد ورود";
   profileCodeInput.value="";
   showAuthError("");
-  firstNameInput.focus();
+  (mode==="create"?firstNameInput:profileCodeInput).focus();
 }
 function showAuthChoices(){
   authMode="";
   authFields.classList.add("hidden");
   authChoices.classList.remove("hidden");
+  firstNameInput.hidden=false;
+  lastNameInput.hidden=false;
+  firstNameInput.required=true;
+  lastNameInput.required=true;
+  profileCodeInput.minLength=4;
+  profileCodeInput.placeholder="کد ورود: حداقل ۴ نویسه، شامل حرف و عدد";
   document.getElementById("profileTitle").textContent="خوش آمدید";
   document.getElementById("profileDescription").textContent="حساب تازه بسازید یا با حساب قبلی وارد شوید. اطلاعات روی همین دستگاه ذخیره می‌شود.";
   firstNameInput.value="";
@@ -371,11 +383,13 @@ async function createAccount(){
     return;
   }
   const matches=Object.entries(profiles).filter(([,p])=>p&&normalizedName(p.name||"")===normalized);
-  if(matches.some(([,p])=>p.verifier&&p.salt)){
-    showAuthError("این حساب از قبل وجود دارد؛ از گزینهٔ ورود استفاده کنید.");
-    return;
-  }
   try{
+    for(const profile of Object.values(profiles)){
+      if(profile&&profile.salt&&profile.verifier&&sameVerifier(await codeVerifier(code,profile.salt),profile.verifier)){
+        showAuthError("این کد برای حساب دیگری استفاده شده است؛ کد دیگری انتخاب کنید.");
+        return;
+      }
+    }
     const salt=randomHex(16), verifier=await codeVerifier(code,salt), id=randomHex(16);
     const legacy=matches.find(([,p])=>!p.verifier||!p.salt);
     let oldMarks=legacy?legacy[1].marks:{}, oldSeen=legacy&&Array.isArray(legacy[1].seen)?legacy[1].seen:[];
@@ -399,20 +413,26 @@ async function createAccount(){
   }
 }
 async function loginAccount(){
-  const name=accountName(), normalized=normalizedName(name), code=profileCodeInput.value;
-  if(!firstNameInput.value.trim()||!lastNameInput.value.trim()){
-    showAuthError("نام و تخلص را هر دو وارد کنید.");
+  const code=profileCodeInput.value;
+  if(!code){
+    showAuthError("کد ورود را وارد کنید.");
     return;
   }
   try{
-    const candidates=Object.entries(profiles).filter(([,p])=>p&&normalizedName(p.name||"")===normalized&&p.salt&&p.verifier);
+    const candidates=Object.entries(profiles).filter(([,p])=>p&&p.salt&&p.verifier);
+    const matches=[];
     for(const [id,profile] of candidates){
-      if(sameVerifier(await codeVerifier(code,profile.salt),profile.verifier)){
-        activateProfile(id);
-        return;
-      }
+      if(sameVerifier(await codeVerifier(code,profile.salt),profile.verifier)) matches.push(id);
     }
-    showAuthError("نام، تخلص یا کد ورود درست نیست.");
+    if(matches.length===1){
+      activateProfile(matches[0]);
+      return;
+    }
+    if(matches.length>1){
+      showAuthError("این کد برای چند حساب ثبت شده است. کد یکتای حساب را وارد کنید.");
+      return;
+    }
+    showAuthError("کد ورود درست نیست.");
   }catch(error){
     console.error("ورود به حساب ناموفق بود.",error);
     showAuthError("ورود در این مرورگر ممکن نشد. لطفاً دوباره تلاش کنید.");
