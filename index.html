@@ -88,11 +88,16 @@ h1{margin:0;font-weight:200;font-size:clamp(34px,7vw,60px);letter-spacing:1px}
 .profile-bar button{border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;padding:5px 12px;border-radius:999px;cursor:pointer}
 #profileGate{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,12,25,.78);backdrop-filter:blur(5px)}
 #profileGate.hidden{display:none}
-.profile-card{width:min(360px,100%);padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--bg1);text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+.profile-card{width:min(400px,100%);padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--bg1);text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.35)}
 .profile-card h2{margin:0 0 8px;font-size:21px;font-weight:400}
 .profile-card p{margin:0 0 16px;color:var(--muted);font-size:13px}
-.profile-card input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;text-align:center}
-.profile-card button{margin-top:12px;padding:9px 22px;border:0;border-radius:10px;background:var(--accent);color:#0a1730;font:inherit;font-weight:600;cursor:pointer}
+.profile-card input{width:100%;margin-top:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;text-align:center}
+.profile-card button{margin:12px 4px 0;padding:9px 16px;border:0;border-radius:10px;background:var(--accent);color:#0a1730;font:inherit;font-weight:600;cursor:pointer}
+.profile-card .secondary{border:1px solid var(--line);background:var(--panel);color:var(--text)}
+.auth-error{min-height:20px;margin-top:10px;color:var(--no);font-size:13px}
+.auth-choices{display:flex;flex-direction:column;gap:8px}
+.auth-choices button{width:100%;margin:4px 0}
+.auth-notice{margin:18px 0 0!important;font-size:12px!important}
 @media (max-width:600px){
   .lab{width:108px;height:68px;display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1.2;padding:4px;text-align:center;overflow:hidden;overflow-wrap:anywhere;background:var(--bg1)}
   .row{height:70px}
@@ -132,10 +137,21 @@ h1{margin:0;font-weight:200;font-size:clamp(34px,7vw,60px);letter-spacing:1px}
 <canvas id="snow"></canvas>
 <div id="profileGate" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
   <form class="profile-card" id="profileForm">
-    <h2 id="profileTitle">نام و تخلص</h2>
-    <p>اطلاعات هر نفر جداگانه روی همین دستگاه ذخیره می‌شود.</p>
-    <input id="profileName" type="text" autocomplete="name" maxlength="80" aria-label="نام و تخلص" placeholder="نام و تخلص خود را بنویسید" required>
-    <button id="profileSubmit" type="submit">شروع</button>
+    <h2 id="profileTitle">خوش آمدید</h2>
+    <p id="profileDescription">حساب تازه بسازید یا با حساب قبلی وارد شوید. اطلاعات روی همین دستگاه ذخیره می‌شود.</p>
+    <div class="auth-choices" id="authChoices">
+      <button id="createAccount" type="button">ساخت حساب جدید</button>
+      <button id="loginAccount" type="button">ورود به حساب قبلی</button>
+    </div>
+      <p class="auth-notice">این نسخه فقط روی همین مرورگر ذخیره می‌کند و امنیت سروری ندارد؛ ورود امن از دستگاه‌های دیگر به سرور نیاز دارد.</p>
+    <div id="authFields" class="hidden">
+      <input id="profileFirstName" type="text" autocomplete="given-name" maxlength="40" aria-label="نام" placeholder="نام" required>
+      <input id="profileLastName" type="text" autocomplete="family-name" maxlength="40" aria-label="تخلص" placeholder="تخلص" required>
+      <input id="profileCode" type="password" autocomplete="new-password" minlength="4" maxlength="64" aria-label="کد ورود" placeholder="کد ورود: حداقل ۴ نویسه، شامل حرف و عدد" required>
+      <div class="auth-error" id="authError" aria-live="polite"></div>
+      <button id="profileSubmit" type="submit">ثبت حساب</button>
+      <button id="authBack" class="secondary" type="button">بازگشت</button>
+    </div>
   </form>
 </div>
 <div class="wrap">
@@ -254,53 +270,173 @@ const EXCUSE = new Set([7,9,10,11,12,15,16,17,18]);
 const fa = n => String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
 const store = {
   get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){console.error("خواندن اطلاعات ذخیره‌شده ناموفق بود.",e);return def}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.error("ذخیرهٔ خودکار ناموفق بود.",e)}}
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error("ذخیرهٔ خودکار ناموفق بود.",e);return false}}
 };
 const PROFILES_KEY="za1405:profiles";
+const ACTIVE_PROFILE_KEY="za1405:activeProfile";
 let profiles=store.get(PROFILES_KEY,{})||{};
+if(typeof profiles!=="object"||Array.isArray(profiles)) profiles={};
 let profileKey="";
 let profileName="";
 let marks={};
 let seen=[];
 let cur = 0;
 
-function saveProfile(){
-  if(!profileKey) return;
-  profiles[profileKey]={name:profileName,marks,seen};
-  store.set(PROFILES_KEY,profiles);
-}
-function activateProfile(name){
-  profileName=name.trim().replace(/\s+/g," ");
-  profileKey=encodeURIComponent(profileName.toLocaleLowerCase());
-  profiles=store.get(PROFILES_KEY,{})||{};
-  let profile=profiles[profileKey];
-  if(!profile&&Object.keys(profiles).length===0){
-    const oldSeen=store.get("za1405:seen",{}).omar||[];
-    profile={name:profileName,marks:store.get("za1405:marks",{}),seen:oldSeen};
-  }
-  if(!profile) profile={name:profileName,marks:{},seen:[]};
-  profile.name=profileName;
-  marks=profile.marks||{};
-  seen=profile.seen||[];
-  document.getElementById("profileLabel").textContent=profileName;
-  store.set("za1405:activeProfile",profileKey);
-  saveProfile();
-  document.getElementById("profileGate").classList.add("hidden");
-  renderMonths();renderGrid();renderEps();
-}
 const profileGate=document.getElementById("profileGate");
 const profileForm=document.getElementById("profileForm");
-const profileNameInput=document.getElementById("profileName");
-profileForm.addEventListener("submit",e=>{
+const authChoices=document.getElementById("authChoices");
+const authFields=document.getElementById("authFields");
+const authError=document.getElementById("authError");
+const firstNameInput=document.getElementById("profileFirstName");
+const lastNameInput=document.getElementById("profileLastName");
+const profileCodeInput=document.getElementById("profileCode");
+let authMode="";
+
+function normalizedName(name){return name.trim().replace(/\s+/g," ").toLocaleLowerCase()}
+function accountName(){return [firstNameInput.value.trim(),lastNameInput.value.trim()].filter(Boolean).join(" ").replace(/\s+/g," ")}
+function showAuthError(message){authError.textContent=message}
+function setAuthMode(mode){
+  authMode=mode;
+  authChoices.classList.add("hidden");
+  authFields.classList.remove("hidden");
+  document.getElementById("profileTitle").textContent=mode==="create"?"ساخت حساب جدید":"ورود به حساب";
+  document.getElementById("profileDescription").textContent=mode==="create"?"نام، تخلص و کدی بسازید که حداقل ۴ نویسه و شامل حرف و عدد باشد.":"نام، تخلص و کدی را وارد کنید که هنگام ساخت حساب انتخاب کرده‌اید.";
+  document.getElementById("profileSubmit").textContent=mode==="create"?"ثبت حساب":"ورود";
+  profileCodeInput.autocomplete=mode==="create"?"new-password":"current-password";
+  profileCodeInput.value="";
+  showAuthError("");
+  firstNameInput.focus();
+}
+function showAuthChoices(){
+  authMode="";
+  authFields.classList.add("hidden");
+  authChoices.classList.remove("hidden");
+  document.getElementById("profileTitle").textContent="خوش آمدید";
+  document.getElementById("profileDescription").textContent="حساب تازه بسازید یا با حساب قبلی وارد شوید. اطلاعات روی همین دستگاه ذخیره می‌شود.";
+  firstNameInput.value="";
+  lastNameInput.value="";
+  profileCodeInput.value="";
+}
+function bytesToHex(bytes){return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("")}
+function randomHex(size){
+  const bytes=new Uint8Array(size);
+  crypto.getRandomValues(bytes);
+  return bytesToHex(bytes);
+}
+async function codeVerifier(code,salt){
+  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(code),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:Uint8Array.from(salt.match(/.{2}/g),b=>parseInt(b,16)),iterations:120000,hash:"SHA-256"},key,256);
+  return bytesToHex(new Uint8Array(bits));
+}
+function sameVerifier(a,b){
+  if(typeof a!=="string"||typeof b!=="string"||a.length!==b.length) return false;
+  let diff=0;
+  for(let i=0;i<a.length;i++) diff|=a.charCodeAt(i)^b.charCodeAt(i);
+  return diff===0;
+}
+
+function saveProfile(){
+  if(!profileKey) return false;
+  profiles[profileKey]={...profiles[profileKey],name:profileName,marks,seen};
+  if(!store.set(PROFILES_KEY,profiles)){
+    window.alert("ذخیرهٔ تغییرات ناموفق بود. حافظهٔ مرورگر را بررسی کنید.");
+    return false;
+  }
+  return true;
+}
+function activateProfile(id){
+  const profile=profiles[id];
+  if(!profile) return false;
+  profileKey=id;
+  profileName=profile.name;
+  marks=profile.marks||{};
+  seen=Array.isArray(profile.seen)?profile.seen:[];
+  if(!saveProfile()||!store.set(ACTIVE_PROFILE_KEY,id)){
+    profileKey="";
+    profileName="";
+    showAuthError("ذخیره‌سازی در مرورگر ناموفق است. فضای ذخیره‌سازی را بررسی کنید.");
+    return false;
+  }
+  document.getElementById("profileLabel").textContent=profileName;
+  profileGate.classList.add("hidden");
+  renderMonths();renderGrid();renderEps();
+  return true;
+}
+async function createAccount(){
+  const name=accountName(), normalized=normalizedName(name), code=profileCodeInput.value;
+  if(!firstNameInput.value.trim()||!lastNameInput.value.trim()){
+    showAuthError("نام و تخلص را هر دو وارد کنید.");
+    return;
+  }
+  if(!/\p{L}/u.test(code)||!/\p{N}/u.test(code)){
+    showAuthError("کد ورود باید شامل حداقل یک حرف و یک عدد باشد.");
+    return;
+  }
+  const matches=Object.entries(profiles).filter(([,p])=>p&&normalizedName(p.name||"")===normalized);
+  if(matches.some(([,p])=>p.verifier&&p.salt)){
+    showAuthError("این حساب از قبل وجود دارد؛ از گزینهٔ ورود استفاده کنید.");
+    return;
+  }
+  try{
+    const salt=randomHex(16), verifier=await codeVerifier(code,salt), id=randomHex(16);
+    const legacy=matches.find(([,p])=>!p.verifier||!p.salt);
+    let oldMarks=legacy?legacy[1].marks:{}, oldSeen=legacy&&Array.isArray(legacy[1].seen)?legacy[1].seen:[];
+    if(!legacy&&Object.keys(profiles).length===0){
+      oldMarks=store.get("za1405:marks",{});
+      const previousSeen=store.get("za1405:seen",{});
+      oldSeen=previousSeen&&Array.isArray(previousSeen.omar)?previousSeen.omar:[];
+    }
+    const updated={...profiles};
+    if(legacy) delete updated[legacy[0]];
+    updated[id]={name,salt,verifier,marks:oldMarks||{},seen:oldSeen};
+    if(!store.set(PROFILES_KEY,updated)){
+      showAuthError("ساخت حساب ناموفق بود؛ فضای ذخیره‌سازی مرورگر را بررسی کنید.");
+      return;
+    }
+    profiles=updated;
+    activateProfile(id);
+  }catch(error){
+    console.error("ساخت حساب ناموفق بود.",error);
+    showAuthError("ساخت حساب در این مرورگر ممکن نشد. لطفاً دوباره تلاش کنید.");
+  }
+}
+async function loginAccount(){
+  const name=accountName(), normalized=normalizedName(name), code=profileCodeInput.value;
+  if(!firstNameInput.value.trim()||!lastNameInput.value.trim()){
+    showAuthError("نام و تخلص را هر دو وارد کنید.");
+    return;
+  }
+  try{
+    const candidates=Object.entries(profiles).filter(([,p])=>p&&normalizedName(p.name||"")===normalized&&p.salt&&p.verifier);
+    for(const [id,profile] of candidates){
+      if(sameVerifier(await codeVerifier(code,profile.salt),profile.verifier)){
+        activateProfile(id);
+        return;
+      }
+    }
+    showAuthError("نام، تخلص یا کد ورود درست نیست.");
+  }catch(error){
+    console.error("ورود به حساب ناموفق بود.",error);
+    showAuthError("ورود در این مرورگر ممکن نشد. لطفاً دوباره تلاش کنید.");
+  }
+}
+profileForm.addEventListener("submit",async e=>{
   e.preventDefault();
-  if(!profileNameInput.value.trim()) return;
-  activateProfile(profileNameInput.value);
+  if(authMode==="create") await createAccount();
+  if(authMode==="login") await loginAccount();
 });
+document.getElementById("createAccount").addEventListener("click",()=>setAuthMode("create"));
+document.getElementById("loginAccount").addEventListener("click",()=>setAuthMode("login"));
+document.getElementById("authBack").addEventListener("click",showAuthChoices);
 document.getElementById("switchProfile").addEventListener("click",()=>{
-  profileNameInput.value=profileName;
-  document.getElementById("profileSubmit").textContent="ورود";
+  if(!store.set(ACTIVE_PROFILE_KEY,"")){
+    window.alert("خروج از حساب ناموفق بود. لطفاً دوباره تلاش کنید.");
+    return;
+  }
+  profileKey="";
+  profileName="";
   profileGate.classList.remove("hidden");
-  profileNameInput.focus();
+  showAuthChoices();
 });
 
 const now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -403,13 +539,11 @@ themeToggle.onclick=()=>{
     requestAnimationFrame(tick)})(0);
 })();
 
-const activeProfile=store.get("za1405:activeProfile","");
-if(activeProfile&&profiles[activeProfile]){
-  profileNameInput.value=profiles[activeProfile].name;
-  document.getElementById("profileSubmit").textContent="ادامه";
+const activeProfile=store.get(ACTIVE_PROFILE_KEY,"");
+if(activeProfile&&profiles[activeProfile]&&profiles[activeProfile].salt&&profiles[activeProfile].verifier){
+  activateProfile(activeProfile);
 }
-profileGate.classList.remove("hidden");
-profileNameInput.focus();
+if(!profileGate.classList.contains("hidden")) showAuthChoices();
 </script>
 </body>
 </html>
